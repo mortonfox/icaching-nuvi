@@ -10,6 +10,17 @@ module IcachingNuvi
       SQLite3::Database.new(store_fname, results_as_hash: true) { |db|
 
         stmt = <<-ENDS
+select * from ZATTRIBUTE
+        ENDS
+
+        attrtable = Hash.new { |h, k| h[k] = [] }
+        db.query(stmt) { |result_set|
+          result_set.each { |row|
+            attrtable[row['ZRELTOCACHE']] << { attr: row['ZATTRIBUTETYPEID'], ison: row['ZISON'] }
+          }
+        }
+
+        stmt = <<-ENDS
 select * from ZGEOCACHE
 where Z_PK in (
   select Z_3RELTOCACHE from Z_2RELTOCACHE
@@ -32,13 +43,16 @@ where Z_PK in (
               longitude: row['ZLONGITUDE'],
               code: row['ZCODE'],
               size: row['ZCONTAINER'],
+              name: row['ZNAME'],
               desc: row['ZDESC'],
               hint: row['ZENCODEDHINTS'],
               short_desc: row['ZSHORTDESCRIPTION'],
               long_desc: row['ZLONGDESCRIPTION'],
               my_note: row['ZMYNOTE'],
               state: row['ZSTATE'],
-              type: row['ZTYPE']
+              country: row['ZCOUNTRY'],
+              type: row['ZTYPE'],
+              attributes: attrtable[row['Z_PK']].sort_by { |v| v[:attr] }
             }
             p row
             p @caches[row['Z_PK']]
