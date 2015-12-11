@@ -3,6 +3,17 @@ require 'sqlite3'
 
 module IcachingNuvi
   class Datastore
+    # Sqlite3 seems to store timestamps as secs since 2001-01-01. So add the
+    # following number of seconds to make it Unix time.
+    SQLITE_EPOCH = 978_325_200
+    def sqlite_to_time tm
+      Time.at(tm + SQLITE_EPOCH)
+    end
+
+    def hash_auto_array
+      Hash.new { |h, k| h[k] = [] }
+    end
+
     def initialize folder
       @caches = {}
 
@@ -13,10 +24,26 @@ module IcachingNuvi
 select * from ZATTRIBUTE
         ENDS
 
-        attrtable = Hash.new { |h, k| h[k] = [] }
+        attrtable = hash_auto_array
         db.query(stmt) { |result_set|
           result_set.each { |row|
             attrtable[row['ZRELTOCACHE']] << { attr: row['ZATTRIBUTETYPEID'], ison: row['ZISON'] }
+          }
+        }
+
+        stmt = <<-ENDS
+select * from ZLOG
+        ENDS
+
+        logtable = hash_auto_array
+        db.query(stmt) { |result_set|
+          result_set.each { |row|
+            logtable[row['ZRELTOCACHE']] << {
+              date: sqlite_to_time(row['ZDATE']),
+              finder: row['ZFINDER'],
+              text: row['ZTEXT'],
+              type: row['ZTYPE']
+            }
           }
         }
 
@@ -33,10 +60,11 @@ where Z_PK in (
 
         db.query(stmt, [folder]) { |result_set|
           result_set.each { |row|
-            @caches[row['Z_PK']] = {
+            cache_id = row['Z_PK']
+            @caches[cache_id] = {
               archived: row['ZARCHIVED'] != 0,
               available: row['ZAVAILABLE'] != 0,
-              date_created: Time.at(row['ZDATECREATED'] + 978_325_200), # It was stored as secs since 2001-01-01.
+              date_created: sqlite_to_time(row['ZDATECREATED']),
               difficulty: row['ZDIFFICULTY'],
               terrain: row['ZTERRAIN'],
               latitude: row['ZLATITUDE'],
@@ -52,10 +80,11 @@ where Z_PK in (
               state: row['ZSTATE'],
               country: row['ZCOUNTRY'],
               type: row['ZTYPE'],
-              attributes: attrtable[row['Z_PK']].sort_by { |v| v[:attr] }
+              attributes: attrtable[cache_id].sort_by { |v| v[:attr] },
+              logs: logtable[cache_id].sort_by { |v| v[:date] }.reverse
             }
             p row
-            p @caches[row['Z_PK']]
+            p @caches[cache_id]
           }
         }
       }
