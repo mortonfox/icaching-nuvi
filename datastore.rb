@@ -14,9 +14,11 @@ module IcachingNuvi
       Hash.new { |h, k| h[k] = [] }
     end
 
-    def initialize folder
+    def initialize
       @caches = {}
+    end
 
+    def read folder
       store_fname = File.join ENV['HOME'], Config.datastore
       SQLite3::Database.new(store_fname, results_as_hash: true) { |db|
 
@@ -83,12 +85,14 @@ where Z_PK in (
               attributes: attrtable[cache_id].sort_by { |v| v[:attr] },
               logs: logtable[cache_id].sort_by { |v| v[:date] }.reverse
             }
-            p row
-            p @caches[cache_id]
+            # p row
+            # p @caches[cache_id]
           }
         }
       }
     end
+
+    attr_reader :caches
   end
 end
 
