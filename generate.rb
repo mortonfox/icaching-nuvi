@@ -1,4 +1,5 @@
 require_relative 'config'
+require 'oga'
 
 module IcachingNuvi
   class Generate
@@ -40,12 +41,42 @@ module IcachingNuvi
       # Shorten string.
       squished[0, maxlen]
     end
+
+    # Helper for strip_html.
+    def strip_html_2 elem
+      out = ''
+      elem.each_node { |node|
+        case node
+        when Oga::XML::Element
+          case node.name.downcase
+          when 'br'
+            out += '<br>'
+          when 'p'
+            # Need to do this recursively because we want to close the <p>
+            # block properly.
+            out += '<p>' + strip_html_2(node) + '</p>'
+            throw :skip_children
+          end
+        when Oga::XML::Text
+          out += node.text
+        end
+      }
+      out
+    end
+
+    # Strip HTML tags except for <p> and <br>. This is for POILoader and the
+    # Nuvi, which can't handle anything too complicated.
+    def strip_html s
+      elem = Oga.parse_html s
+      strip_html_2 elem
+    end
   end
 end
 
 if __FILE__ == $PROGRAM_NAME
   s = ARGV.join ' '
   puts s
-  puts IcachingNuvi::Generate.new.smart_name(s, 8)
-  puts IcachingNuvi::Generate.new.truncate(s, 8)
+  puts IcachingNuvi::Generate.new.strip_html s
+  # puts IcachingNuvi::Generate.new.smart_name(s, 8)
+  # puts IcachingNuvi::Generate.new.truncate(s, 8)
 end
