@@ -1,4 +1,5 @@
 require_relative 'config'
+require_relative 'attributes'
 require 'oga'
 
 module IcachingNuvi
@@ -7,6 +8,7 @@ module IcachingNuvi
     TEXT_LIMIT = 16_500
 
     def initialize
+      @attributes = Attributes.new
     end
 
     def esc_html s
@@ -120,6 +122,15 @@ module IcachingNuvi
       else
         'E' + conv_coord(coord)
       end
+    end
+
+    # Format attributes.
+    def fmt_attrib cache
+      cache[:attributes].map { |attr|
+        format('%s=%s',
+               @attributes[attr[:attr]] || 'Unknown attr',
+               attr[:ison] ? 'Y' : 'N')
+      }.join(', ')
     end
   end
 end

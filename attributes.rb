@@ -7,10 +7,7 @@ module IcachingNuvi
       @attrs = {}
       CSV.open(Config.attributes, headers: :first_row) { |csv|
         csv.each { |row|
-          @attrs[row['ID'].to_i] = {
-            no: row['NoText'],
-            yes: row['YesText']
-          }
+          @attrs[row['ID'].to_i] = row['IconName']
         }
       }
     end
