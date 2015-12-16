@@ -11,7 +11,7 @@ module IcachingNuvi
       @attributes = Attributes.new
     end
 
-    def esc_html s
+    def escape_html s
       x = Oga::XML::Text.new
       x.text = s
       x.to_xml
@@ -124,13 +124,27 @@ module IcachingNuvi
       end
     end
 
-    # Format attributes.
+    # Format cache attributes.
     def fmt_attrib cache
       cache[:attributes].map { |attr|
         format('%s=%s',
                @attributes[attr[:attr]] || 'Unknown attr',
                attr[:ison] ? 'Y' : 'N')
       }.join(', ')
+    end
+
+    # Format cache logs.
+    def fmt_logs cache
+      cache[:logs].map { |log|
+        format(<<-FMTSTR,
+<font color=#0000FF>%s by %s %s</font> - %s<br><br>
+FMTSTR
+               log[:type],
+               log[:finder],
+               log[:date].strftime('%Y-%m-%d'),
+               escape_html(strip_html(log[:text]))
+              )
+      }.join
     end
   end
 end
