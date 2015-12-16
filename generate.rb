@@ -127,24 +127,37 @@ module IcachingNuvi
     # Format cache attributes.
     def fmt_attrib cache
       cache[:attributes].map { |attr|
-        format('%s=%s',
-               @attributes[attr[:attr]] || 'Unknown attr',
-               attr[:ison] ? 'Y' : 'N')
+        attr_str = @attributes[attr[:attr]] || 'Unknown attr'
+        ison_str = attr[:ison] ? 'Y' : 'N'
+        "#{attr_str}=#{ison_str}"
       }.join(', ')
     end
 
     # Format cache logs.
     def fmt_logs cache
       cache[:logs].map { |log|
-        format(<<-FMTSTR,
-<font color=#0000FF>%s by %s %s</font> - %s<br><br>
-FMTSTR
-               log[:type],
-               log[:finder],
-               log[:date].strftime('%Y-%m-%d'),
-               escape_html(strip_html(log[:text]))
-              )
+        "<font color=#0000FF>#{log[:type]} by #{log[:finder]} #{log[:date].strftime('%Y-%m-%d')}</font> - #{escape_html(strip_html(log[:text]))}<br><br>"
       }.join
+    end
+
+    # Generate GPX for an additional waypoint.
+    def fmt_waypoint cache, wpt
+      wptname = "#{wpt[:code]} - #{wpt[:symbol]}"
+      ccomment = strip_html wpt[:comment]
+
+      parentinfo = "#{cache[:code]} - #{smart_name(cache[:name], 8)}"
+
+      childdesc = "This is a child waypoint for Cache <font color=#0000FF>#{parentinfo}</font><br><br>Type: #{wpt[:symbol]}<br>Comment: #{ccomment}"
+
+      <<-STR
+<wpt lat='#{wpt[:latitude]}' lon='#{wpt[:longitude]}'><ele>0.00</ele><time>#{wpt[:date].utc.strftime('%Y-%m-%dT%H:%M:%SZ')}</time>
+<name>#{wptname}</name><cmt></cmt><desc>#{escape_html childdesc}</desc><link href="futurefeature.jpg"/>
+<sym>Information</sym>
+<extensions><gpxx:WaypointExtension>
+<gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+<gpxx:Address><gpxx:PostalCode>Child of #{parentinfo}</gpxx:PostalCode></gpxx:Address>
+</gpxx:WaypointExtension></extensions></wpt>
+      STR
     end
   end
 end
