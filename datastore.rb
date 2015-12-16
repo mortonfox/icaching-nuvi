@@ -53,6 +53,25 @@ select * from ZLOG
         }
 
         stmt = <<-ENDS
+select * from ZWAYPOINT
+        ENDS
+
+        wpt_table = hash_auto_array
+        db.query(stmt) { |result_set|
+          result_set.each { |row|
+            wpt_table[row['ZRELTOCACHE']] << {
+              date: sqlite_to_time(row['ZTIME']),
+              comment: row['ZCMT'],
+              latitude: row['ZLAT'],
+              longitude: row['ZLON'],
+              code: row['ZCODE'],
+              desc: row['ZDESC'],
+              symbol: row['ZSYM']
+            }
+          }
+        }
+
+        stmt = <<-ENDS
 select * from ZGEOCACHE
 where Z_PK in (
   select Z_3RELTOCACHE from Z_2RELTOCACHE
@@ -86,7 +105,8 @@ where Z_PK in (
               country: row['ZCOUNTRY'],
               type: row['ZTYPE'],
               attributes: attrtable[cache_id].sort_by { |v| v[:attr] },
-              logs: logtable[cache_id].sort_by { |v| v[:date] }.reverse
+              logs: logtable[cache_id].sort_by { |v| v[:date] }.reverse,
+              waypoints: wpt_table[cache_id]
             }
           }
         }
