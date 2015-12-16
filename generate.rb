@@ -9,6 +9,12 @@ module IcachingNuvi
     def initialize
     end
 
+    def esc_html s
+      x = Oga::XML::Text.new
+      x.text = s
+      x.to_xml
+    end
+
     # Truncate a string to the specified length but clean up HTML entities at
     # the end of the string that may have gotten chopped up.
     def truncate s, len
@@ -70,13 +76,60 @@ module IcachingNuvi
       elem = Oga.parse_html s
       strip_html_2 elem
     end
+
+    LOG_TYPES = {
+      'found it' => 'F',
+      'webcam photo taken' => 'F',
+      'attended' => 'F',
+      'didn\'t find it' => 'N'
+    }
+    def conv_log_type log
+      LOG_TYPES[log.downcase] || 'X'
+    end
+
+    # Summarize last 4 cache logs.
+    def last4 cache
+      4.times.zip(cache[:logs]) { |_, log|
+        if log
+          conv_log_type log[:type]
+        else
+          '-'
+        end
+      }.join
+    end
+
+    def conv_coord coord
+      deg = coord.floor
+      decim = (coord - deg) * 60.0
+      format '%d %06.3f', deg, decim
+    end
+
+    # Convert latitude from decimal degrees to ddd mm.mmm
+    def conv_latitude coord
+      if coord < 0
+        'S' + conv_coord(-coord)
+      else
+        'N' + conv_coord(coord)
+      end
+    end
+
+    # Convert longitude from decimal degrees to ddd mm.mmm
+    def conv_longitude coord
+      if coord < 0
+        'W' + conv_coord(-coord)
+      else
+        'E' + conv_coord(coord)
+      end
+    end
   end
 end
 
 if __FILE__ == $PROGRAM_NAME
-  s = ARGV.join ' '
-  puts s
-  puts IcachingNuvi::Generate.new.strip_html s
+  # s = ARGV.join ' '
+  # puts s
+  puts IcachingNuvi::Generate.new.conv_latitude ARGV[0].to_f
+  puts IcachingNuvi::Generate.new.conv_longitude ARGV[1].to_f
+  # puts IcachingNuvi::Generate.new.strip_html s
   # puts IcachingNuvi::Generate.new.smart_name(s, 8)
   # puts IcachingNuvi::Generate.new.truncate(s, 8)
 end
