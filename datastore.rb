@@ -29,7 +29,10 @@ select * from ZATTRIBUTE
         attrtable = hash_auto_array
         db.query(stmt) { |result_set|
           result_set.each { |row|
-            attrtable[row['ZRELTOCACHE']] << { attr: row['ZATTRIBUTETYPEID'], ison: row['ZISON'] }
+            attrtable[row['ZRELTOCACHE']] << {
+              attr: row['ZATTRIBUTETYPEID'],
+              ison: row['ZISON'] != 0
+            }
           }
         }
 
@@ -85,8 +88,6 @@ where Z_PK in (
               attributes: attrtable[cache_id].sort_by { |v| v[:attr] },
               logs: logtable[cache_id].sort_by { |v| v[:date] }.reverse
             }
-            # p row
-            # p @caches[cache_id]
           }
         }
       }
@@ -97,5 +98,8 @@ where Z_PK in (
 end
 
 if __FILE__ == $PROGRAM_NAME
-  IcachingNuvi::Datastore.new 'lancaster'
+  require 'pp'
+  ds = IcachingNuvi::Datastore.new
+  ds.read 'lancaster'
+  pp ds.caches
 end
