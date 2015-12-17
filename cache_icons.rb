@@ -1,3 +1,5 @@
+require 'base64'
+
 module IcachingNuvi
   # Base64-encoded icon data.
   class CacheIcons
@@ -66,5 +68,26 @@ APDzjHFKtjYVYpTqVVGnUcI+1qzc6lVpLWpOT1m23yxjBNQhGKzoZri8PG0bbJaq+i0S9D8yP2hP
 5WRw84fJkS4lvSiiv0zh3hnKeF8LUo4KLvVl7SpKTvKpU5IQdSb0vOUYR55WvOSc5XnKUnxVq1Sv
 JOXTReS3svLU/9k=
     ENDS
+
+    def self.write_icon data, fname
+      return if File.exist? fname
+
+      File.open(fname, 'wb') { |f|
+        f.write Base64.decode64(data)
+      }
+    end
+
+    def self.write_bmp fname
+      write_icon CACHE_BMP, fname
+    end
+
+    def self.write_jpg fname
+      write_icon CACHE_JPG, fname
+    end
   end
+end
+
+if __FILE__ == $PROGRAM_NAME
+  IcachingNuvi::CacheIcons.write_jpg '/tmp/test.jpg'
+  IcachingNuvi::CacheIcons.write_bmp '/tmp/test.bmp'
 end
