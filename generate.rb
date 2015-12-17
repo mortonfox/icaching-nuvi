@@ -1,5 +1,7 @@
 require_relative 'config'
 require_relative 'attributes'
+require_relative 'datastore'
+require_relative 'cache_icons'
 require 'oga'
 
 module IcachingNuvi
@@ -242,6 +244,41 @@ module IcachingNuvi
 <gpxx:Address><gpxx:PostalCode>#{escape_html plaincacheinfo}</gpxx:PostalCode></gpxx:Address>
 </gpxx:WaypointExtension></extensions></wpt>
       ENDS
+    end
+
+    # Output GPX file and icons for a folder.
+    def process_folder folder, outdir
+      ds = Datastore.new
+      ds.read folder
+      caches = ds.caches
+
+      outfname = File.join outdir, "#{folder} GSAK.gpx"
+
+      File.open(outfname, 'w') { |f|
+        f.puts <<-ENDS
+<?xml version='1.0' encoding='Windows-1252' standalone='no' ?>
+<gpx xmlns='http://www.topografix.com/GPX/1/1' xmlns:gpxx = 'http://www.garmin.com/xmlschemas/GpxExtensions/v3' creator='Pilotsnipes' version='1.1' xmlns:xsi = 'http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www8.garmin.com/xmlschemas/GpxExtensions/v3/GpxExtensionsv3.xsd'>
+<metadata>
+<desc>Pilotsnipes GPX output for Nuvi</desc>
+<link href='http://pilotsnipes.googlepages.com'><text>Tourguide Compatible.</text></link>
+<time>2008-05-01T00:00:00Z</time>
+<bounds maxlat='53.000000' maxlon='-6.0000' minlat='53.000000' minlon='-6.000000'/>
+</metadata>
+        ENDS
+
+        caches.each { |cache|
+          f.puts fmt_geocache(cache)
+
+          cache[:waypoints].each { |wpt|
+            f.puts fmt_waypoint(cache, wpt)
+          }
+        }
+
+        f.puts '</gpx>'
+      }
+
+      CacheIcons.write_bmp File.join(outdir, "#{folder} GSAK.bmp")
+      CacheIcons.write_jpg File.join(outdir, "#{folder} GSAK.jpg")
     end
   end
 end
