@@ -100,6 +100,14 @@ module IcachingNuvi
       }.join
     end
 
+    # Returns the date the cache was last found, if any.
+    def last_found cache
+      cache[:logs].each { |log|
+        return log[:date] if conv_log_type(log[:type]) == 'F'
+      }
+      nil
+    end
+
     def conv_coord coord
       deg = coord.floor
       decim = (coord - deg) * 60.0
@@ -158,6 +166,82 @@ module IcachingNuvi
 <gpxx:Address><gpxx:PostalCode>Child of #{parentinfo}</gpxx:PostalCode></gpxx:Address>
 </gpxx:WaypointExtension></extensions></wpt>
       STR
+    end
+
+    # Generate GPX for a geocache.
+    def fmt_geocache cache
+      wpt_name = "#{smart_name cache[:name]}/#{cache[:type][0,3]}/#{cache[:code]}"
+
+      status = ''
+      status_plain = ''
+
+      unless cache[:available]
+	status = '<font color=#FF0000>*** Temp Unavailable ***</font><br><br>'
+	status_plain = '*** Temp Unavailable ***'
+      end
+
+      if cache[:archived]
+	status = '<font color=#FF0000>*** Archived ***</font><br><br>'
+	status_plain = '*** Archived ***'
+      end
+
+      name = escape_html cache[:name]
+      owner_name = escape_html cache[:owner]
+
+      info_line = "#{cache[:type][0,3]}/#{cache[:size][0,3]}/#{last4 cache}, (D:#{cache[:difficulty]}/T:#{cache[:terrain]})"
+
+      last_found_date = last_found cache
+      dates = "Pl:#{cache[:date_created].strftime('%Y-%m-%d')}, LF:#{last_found_date ? last_found_date.strftime('%Y-%m-%d') : 'N/A'}"
+
+      coords = "#{conv_latitude cache[:latitude]} #{conv_longitude cache[:longitude]}"
+
+      cache_info = <<-ENDS
+<font color=#FF0000>#{name} by #{owner_name}</font><br>
+<font color=#008000>#{info_line}</font><br>
+<font color=#0000FF>#{dates}</font><br>
+<font color=#FFA500>#{coords}</font><br><br>
+      ENDS
+
+      attr_str = fmt_attrib cache
+      cache_info += "<font color=#00BFFF>**Attributes** #{attr_str}</font><br><br>" unless attr_str.empty?
+
+      # This is some cache information in plain text that the Nuvi will
+      # display before you touch the "More" button.
+      plaincacheinfo = <<-ENDS
+#{status_plain}
+#{coords}
+#{info_line}
+#{name} by #{owner_name}
+#{dates}
+      ENDS
+
+      all_desc = "#{strip_html cache[:short_desc]}<br>#{strip_html cache[:long_desc]}"
+
+      hints = "<font color=#008000>Hint: #{strip_html cache[:hint]}</font><br>"
+
+      logstr = fmt_logs cache
+
+      comb_desc = status + cache_info + 'Description: ' + all_desc + '<br>'
+
+      comb_desc = escape_html comb_desc
+      hints = escape_html hints
+      logstr = escape_html logstr
+
+      final_str = if comb_desc.size + hints.size > TEXT_LIMIT
+                    truncate(comb_desc, TEXT_LIMIT - hints.size - 10) + escape_html('<br>**DESCRIPTION CUT**<br>') + hints
+                  else
+                    truncate(comb_desc + hints + logstr, TEXT_LIMIT)
+                  end
+
+      <<-ENDS
+<wpt lat='#{cache[:latitude]}' lon='#{cache[:longitude]}'><ele>0.00</ele><time>#{cache[:date_created].utc.strftime('%Y-%m-%dT%H:%M:%SZ')}</time>
+<name>#{wpt_name}</name><cmt></cmt><desc>#{final_str}</desc>
+<link href="futurefeature.jpg"/><sym>Information</sym>
+<extensions><gpxx:WaypointExtension>
+<gpxx:DisplayMode>SymbolAndName</gpxx:DisplayMode>
+<gpxx:Address><gpxx:PostalCode>#{escape_html plaincacheinfo}</gpxx:PostalCode></gpxx:Address>
+</gpxx:WaypointExtension></extensions></wpt>
+      ENDS
     end
   end
 end

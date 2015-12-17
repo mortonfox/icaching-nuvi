@@ -96,6 +96,7 @@ where Z_PK in (
               code: row['ZCODE'],
               size: row['ZCONTAINER'],
               name: row['ZNAME'],
+              owner: row['ZOWNER'],
               desc: row['ZDESC'],
               hint: row['ZENCODEDHINTS'],
               short_desc: row['ZSHORTDESCRIPTION'],
