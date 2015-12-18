@@ -79,6 +79,9 @@ module IcachingNuvi
     def strip_html s
       elem = Oga.parse_html s
       strip_html_2 elem
+    rescue
+      # If the HTML parser fails, we fall back to a simple cleanup.
+      s.gsub('&', '&amp;').tr('<>', '[]')
     end
 
     LOG_TYPES = {
