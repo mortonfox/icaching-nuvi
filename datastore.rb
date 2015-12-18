@@ -16,11 +16,24 @@ module IcachingNuvi
 
     def initialize
       @caches = {}
+      @store_fname = File.join ENV['HOME'], Config.datastore
+    end
+
+    # Check if folder exists.
+    def folder? folder
+      SQLite3::Database.new(@store_fname, results_as_hash: true) { |db|
+        stmt = <<-STMT
+select Z_PK from ZFOLDER where ZDISPLAYNAME = ?
+        STMT
+        db.query(stmt, [folder]) { |resultset|
+          resultset.each { return true }
+        }
+      }
+      false
     end
 
     def read folder
-      store_fname = File.join ENV['HOME'], Config.datastore
-      SQLite3::Database.new(store_fname, results_as_hash: true) { |db|
+      SQLite3::Database.new(@store_fname, results_as_hash: true) { |db|
 
         stmt = <<-ENDS
 select * from ZATTRIBUTE

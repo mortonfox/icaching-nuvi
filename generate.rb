@@ -93,7 +93,7 @@ module IcachingNuvi
 
     # Summarize last 4 cache logs.
     def last4 cache
-      4.times.zip(cache[:logs]) { |_, log|
+      4.times.zip(cache[:logs]).map { |_, log|
         if log
           conv_log_type log[:type]
         else
@@ -172,7 +172,7 @@ module IcachingNuvi
 
     # Generate GPX for a geocache.
     def fmt_geocache cache
-      wpt_name = "#{smart_name cache[:name]}/#{cache[:type][0,3]}/#{cache[:code]}"
+      wpt_name = "#{smart_name(cache[:name], 8)}/#{cache[:type][0,3]}/#{cache[:code]}"
 
       status = ''
       status_plain = ''
@@ -249,6 +249,12 @@ module IcachingNuvi
     # Output GPX file and icons for a folder.
     def process_folder folder, outdir
       ds = Datastore.new
+
+      if !ds.folder?(folder)
+        warn "Folder #{folder} not found!"
+        return
+      end
+
       ds.read folder
       caches = ds.caches
 
@@ -266,7 +272,7 @@ module IcachingNuvi
 </metadata>
         ENDS
 
-        caches.each { |cache|
+        caches.each_value { |cache|
           f.puts fmt_geocache(cache)
 
           cache[:waypoints].each { |wpt|
@@ -292,3 +298,5 @@ if __FILE__ == $PROGRAM_NAME
   # puts IcachingNuvi::Generate.new.smart_name(s, 8)
   # puts IcachingNuvi::Generate.new.truncate(s, 8)
 end
+
+__END__
