@@ -251,6 +251,8 @@ module IcachingNuvi
 
     # Output GPX file and icons for a folder.
     def process_folder folder, outdir
+      puts "Processing folder #{folder}..."
+
       ds = Datastore.new
 
       if !ds.folder?(folder)
