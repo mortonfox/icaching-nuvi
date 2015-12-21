@@ -1,3 +1,8 @@
+#!/usr/bin/env ruby
+
+# icaching-nuvi main script.
+# Generate GPX files from iCaching folders for Garmin POI Loader.
+
 require_relative 'generate'
 require 'optparse'
 
@@ -8,7 +13,7 @@ optp = OptionParser.new
 optp.banner = <<-EOM
 Usage: #{File.basename $PROGRAM_NAME} [options] folder [folder...]
 
-Generate GPX files from Icaching folders.
+Generate GPX files from iCaching folders.
 
 EOM
 
