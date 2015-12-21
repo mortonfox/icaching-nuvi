@@ -263,7 +263,7 @@ module IcachingNuvi
       ds.read folder
       caches = ds.caches
 
-      outfname = File.join outdir, "#{folder} GSAK.gpx"
+      outfname = File.join outdir, "#{folder} ICAC.gpx"
 
       File.open(outfname, 'w') { |f|
         f.puts <<-ENDS
@@ -288,8 +288,8 @@ module IcachingNuvi
         f.puts '</gpx>'
       }
 
-      CacheIcons.write_bmp File.join(outdir, "#{folder} GSAK.bmp")
-      CacheIcons.write_jpg File.join(outdir, "#{folder} GSAK.jpg")
+      CacheIcons.write_bmp File.join(outdir, "#{folder} ICAC.bmp")
+      CacheIcons.write_jpg File.join(outdir, "#{folder} ICAC.jpg")
     end
   end
 end
