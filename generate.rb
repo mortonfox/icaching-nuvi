@@ -175,25 +175,25 @@ module IcachingNuvi
 
     # Generate GPX for a geocache.
     def fmt_geocache cache
-      wpt_name = "#{smart_name(cache[:name], 8)}/#{cache[:type][0,3]}/#{cache[:code]}"
+      wpt_name = "#{smart_name(cache[:name], 8)}/#{cache[:type][0, 3]}/#{cache[:code]}"
 
       status = ''
       status_plain = ''
 
       unless cache[:available]
-	status = '<font color=#FF0000>*** Temp Unavailable ***</font><br><br>'
-	status_plain = '*** Temp Unavailable ***'
+        status = '<font color=#FF0000>*** Temp Unavailable ***</font><br><br>'
+        status_plain = '*** Temp Unavailable ***'
       end
 
       if cache[:archived]
-	status = '<font color=#FF0000>*** Archived ***</font><br><br>'
-	status_plain = '*** Archived ***'
+        status = '<font color=#FF0000>*** Archived ***</font><br><br>'
+        status_plain = '*** Archived ***'
       end
 
       name = escape_html cache[:name]
       owner_name = escape_html cache[:owner]
 
-      info_line = "#{cache[:type][0,3]}/#{cache[:size][0,3]}/#{last4 cache}, (D:#{cache[:difficulty]}/T:#{cache[:terrain]})"
+      info_line = "#{cache[:type][0, 3]}/#{cache[:size][0, 3]}/#{last4 cache}, (D:#{cache[:difficulty]}/T:#{cache[:terrain]})"
 
       last_found_date = last_found cache
       dates = "Pl:#{cache[:date_created].strftime('%Y-%m-%d')}, LF:#{last_found_date ? last_found_date.strftime('%Y-%m-%d') : 'N/A'}"
@@ -255,7 +255,7 @@ module IcachingNuvi
 
       ds = Datastore.new
 
-      if !ds.folder?(folder)
+      unless ds.folder?(folder)
         warn "Folder #{folder} not found!"
         return
       end

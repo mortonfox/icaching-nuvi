@@ -34,7 +34,6 @@ select Z_PK from ZFOLDER where ZDISPLAYNAME = ?
 
     def read folder
       SQLite3::Database.new(@store_fname, results_as_hash: true) { |db|
-
         stmt = <<-ENDS
 select * from ZATTRIBUTE
         ENDS
@@ -89,7 +88,7 @@ select * from ZGEOCACHE
 where Z_PK in (
   select Z_3RELTOCACHE from Z_2RELTOCACHE
   where Z_2RELTOFOLDER = (
-    select Z_PK from ZFOLDER 
+    select Z_PK from ZFOLDER
     where ZDISPLAYNAME = ?
   )
 )
