@@ -32,7 +32,7 @@ For example:
 
     icnuvi.rb home delaware maryland
 
-That writes out one GPX file, one JPG, and one BMP for each folder. The two image files are simple icons (X in a yellow box) that will indicate geocaches on the n&uuml;vi map screen. At this time, there isn't support yet for changing the geocache icon.
+That command will produce one GPX file, one JPG, and one BMP for each folder. The two image files are simple icons (X in a yellow box) that will indicate geocaches on the n&uuml;vi map screen. At this time, there is no support yet for changing the geocache icon.
 
 ## Caution
 
