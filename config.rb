@@ -1,4 +1,5 @@
 module IcachingNuvi
+  # Global config holder.
   class Config
     @attributes = '/Applications/iCaching.app/Contents/Resources/Attributes.csv'
     @datastore = 'Library/Containers/com.teamGiants.iCaching/Data/Library/Application Support/iCaching/storedata'

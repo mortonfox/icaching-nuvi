@@ -5,6 +5,7 @@ require_relative 'cache_icons'
 require 'oga'
 
 module IcachingNuvi
+  # Methods for generating GPX files from Icaching data.
   class Generate
     # Maximum length of description, hints, and logs.
     TEXT_LIMIT = 16_500
@@ -29,7 +30,7 @@ module IcachingNuvi
       s[0...-7] + s[-7..-1].delete('&')
     end
 
-    DISCARD_WORDS = %w(this that the a an)
+    DISCARD_WORDS = %w(this that the a an).freeze
 
     def smart_name str, maxlen
       words = str.scan(/\w+/)
@@ -89,7 +90,8 @@ module IcachingNuvi
       'webcam photo taken' => 'F',
       'attended' => 'F',
       'didn\'t find it' => 'N'
-    }
+    }.freeze
+
     def conv_log_type log
       LOG_TYPES[log.downcase] || 'X'
     end

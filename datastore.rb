@@ -2,6 +2,7 @@ require_relative 'config'
 require 'sqlite3'
 
 module IcachingNuvi
+  # Methods for collecting geocache data from the Icaching database.
   class Datastore
     # Sqlite3 seems to store timestamps as secs since 2001-01-01. So add the
     # following number of seconds to make it Unix time.

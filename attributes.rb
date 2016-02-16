@@ -2,6 +2,7 @@ require_relative 'config'
 require 'csv'
 
 module IcachingNuvi
+  # Container for attributes read from Icaching data file.
   class Attributes
     def initialize
       @attrs = {}
